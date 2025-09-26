@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Permisos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .box {
+      border: 1px solid #000;
+      padding: 2rem;
+      max-width: 420px;
+      margin: 2rem auto;
+      background-color: #fff;
+    }
+    .panel-box {
+      border: 1px solid #000;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 0;
+    }
+    .success { background-color: #d5e8d4; border-color: #82b366; }
+    .error { background-color: #f8d7da; border-color: #c9302c; }
+    .warning { background-color: #fff3cd; border-color: #856404; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Formulario -->
+    <div class="box">
+      <h3 class="text-center">Gestión de Permisos</h3>
+      <div class="mb-3">
+        <label for="email" class="form-label">Usuario</label>
+        <input type="email" class="form-control" id="email" placeholder="ej: lucia@example.com">
+      </div>
+      <div class="mb-3">
+        <label for="modulo" class="form-label">Módulo</label>
+        <select class="form-select" id="modulo">
+          <option value="Usuarios">Usuarios</option>
+          <option value="Órdenes">Órdenes</option>
+        </select>
+      </div>
+      <div class="d-flex gap-2">
+        <button id="btnAcceder" class="btn btn-primary w-50">Ingresar</button>
+        <button id="btnRetirar" class="btn btn-warning w-50">Retirar Rol</button>
+      </div>
+    </div>
+
+    <!-- Escenarios -->
+    <div id="permiso-concedido" class="panel-box success" style="display:none;">
+      <h5>Permiso concedido</h5>
+      <p>Acceso permitido al módulo</p>
+    </div>
+
+    <div id="permiso-denegado" class="panel-box error" style="display:none;">
+      <h5>Permiso denegado</h5>
+      <p>Acceso denegado</p>
+    </div>
+
+    <div id="permiso-actualizado" class="panel-box warning" style="display:none;">
+      <h5>Permiso actualizado</h5>
+      <p>No puede modificar órdenes de despacho</p>
+    </div>
+
+  </div>
+
+  <script>
+    const btnAcceder = document.getElementById('btnAcceder');
+    const btnRetirar = document.getElementById('btnRetirar');
+
+    function ocultarEscenarios() {
+      document.getElementById('permiso-concedido').style.display = 'none';
+      document.getElementById('permiso-denegado').style.display = 'none';
+      document.getElementById('permiso-actualizado').style.display = 'none';
+    }
+
+    // Botón Ingresar (Esc1 y Esc2)
+    btnAcceder.addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const modulo = document.getElementById('modulo').value;
+      ocultarEscenarios();
+
+      if (email === "lucia@example.com" && modulo === "Usuarios") {
+        document.getElementById('permiso-concedido').style.display = 'block';
+      } else if (email === "diego@example.com" && modulo === "Usuarios") {
+        document.getElementById('permiso-denegado').style.display = 'block';
+      } else {
+        alert("No hay escenario definido para este ingreso.");
+      }
+    });
+
+    // Botón Retirar Rol (Esc3)
+    btnRetirar.addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const modulo = document.getElementById('modulo').value;
+      ocultarEscenarios();
+
+      if (email === "andres@example.com" && modulo === "Órdenes") {
+        document.getElementById('permiso-actualizado').style.display = 'block';
+      } else {
+        alert("Solo se puede retirar permisos a andres@example.com en Órdenes.");
+      }
+    });
+  </script>
+
+</body>
+</html>
