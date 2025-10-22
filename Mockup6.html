@@ -3,106 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Permisos</title>
+  <title>Gestión de Roles</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    body { background-color: #f8f9fa; }
     .box {
       border: 1px solid #000;
       padding: 2rem;
-      max-width: 420px;
+      max-width: 500px;
       margin: 2rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
       background-color: #fff;
     }
-    .panel-box {
+    .panel {
       border: 1px solid #000;
       padding: 1rem;
       margin-top: 1rem;
-      border-radius: 0;
+      display: none;
     }
     .success { background-color: #d5e8d4; border-color: #82b366; }
     .error { background-color: #f8d7da; border-color: #c9302c; }
-    .warning { background-color: #fff3cd; border-color: #856404; }
+    .info { background-color: #fff3cd; border-color: #ffecb5; }
   </style>
 </head>
 <body>
   <div class="container">
 
-    <!-- Formulario -->
     <div class="box">
-      <h3 class="text-center">Gestión de Permisos</h3>
+      <h3 class="text-center">Gestión de Roles</h3>
       <div class="mb-3">
-        <label for="email" class="form-label">Usuario</label>
-        <input type="email" class="form-control" id="email" placeholder="ej: lucia@example.com">
+        <label for="email" class="form-label">Email del usuario</label>
+        <input type="email" class="form-control" id="email" placeholder="usuario@example.com">
       </div>
       <div class="mb-3">
-        <label for="modulo" class="form-label">Módulo</label>
-        <select class="form-select" id="modulo">
-          <option value="Usuarios">Usuarios</option>
-          <option value="Órdenes">Órdenes</option>
-        </select>
+        <label for="rol" class="form-label">Rol a asignar</label>
+        <input type="text" class="form-control" id="rol" placeholder="Ej: Administrador, Empleado, Ordenes, Encargado de despacho">
       </div>
-      <div class="d-flex gap-2">
-        <button id="btnAcceder" class="btn btn-primary w-50">Ingresar</button>
-        <button id="btnRetirar" class="btn btn-warning w-50">Retirar Rol</button>
-      </div>
+      <button class="btn btn-primary w-100" id="btn-ingresar">Ingresar</button>
+      <button class="btn btn-danger w-100 mt-2" id="btn-eliminar" style="display:none;">Eliminar rol</button>
     </div>
 
-    <!-- Escenarios -->
-    <div id="permiso-concedido" class="panel-box success" style="display:none;">
-      <h5>Permiso concedido</h5>
-      <p>Acceso permitido al módulo</p>
-    </div>
-
-    <div id="permiso-denegado" class="panel-box error" style="display:none;">
-      <h5>Permiso denegado</h5>
-      <p>Acceso denegado</p>
-    </div>
-
-    <div id="permiso-actualizado" class="panel-box warning" style="display:none;">
-      <h5>Permiso actualizado</h5>
-      <p>No puede modificar órdenes de despacho</p>
-    </div>
+    <!-- Paneles de confirmación -->
+    <div class="panel success" id="panel-asignacion"><p>Rol asignado y permisos actualizados.</p></div>
+    <div class="panel success" id="panel-cambio"><p>Rol cambiado correctamente y accesos actualizados.</p></div>
+    <div class="panel error" id="panel-error"><p>Rol no válido o usuario no encontrado.</p></div>
+    <div class="panel info" id="panel-ya-rol"><p></p></div>
+    <div class="panel success" id="panel-eliminado"><p>Rol eliminado correctamente.</p></div>
 
   </div>
 
   <script>
-    const btnAcceder = document.getElementById('btnAcceder');
-    const btnRetirar = document.getElementById('btnRetirar');
+    // Usuarios iniciales
+    const usuarios = [
+      { email: "maria@example.com", roles: [] },
+      { email: "carlos@example.com", roles: ["Empleado"] },
+      { email: "sofia@example.com", roles: [] },
+      { email: "lucia@example.com", roles: [] },
+      { email: "diego@example.com", roles: ["Administrador"] }
+    ];
 
-    function ocultarEscenarios() {
-      document.getElementById('permiso-concedido').style.display = 'none';
-      document.getElementById('permiso-denegado').style.display = 'none';
-      document.getElementById('permiso-actualizado').style.display = 'none';
+    const rolesValidos = ["Administrador", "Empleado", "Ordenes", "Encargado de despacho"];
+
+    // Cambiar rol de Diego a Empleado
+    const diego = usuarios.find(u => u.email === "diego@example.com");
+    if (diego) {
+      diego.roles = ["Empleado"];
     }
 
-    // Botón Ingresar (Esc1 y Esc2)
-    btnAcceder.addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      const modulo = document.getElementById('modulo').value;
-      ocultarEscenarios();
+    // Elementos
+    const emailInput = document.getElementById("email");
+    const rolInput = document.getElementById("rol");
+    const btnIngresar = document.getElementById("btn-ingresar");
+    const btnEliminar = document.getElementById("btn-eliminar");
 
-      if (email === "lucia@example.com" && modulo === "Usuarios") {
-        document.getElementById('permiso-concedido').style.display = 'block';
-      } else if (email === "diego@example.com" && modulo === "Usuarios") {
-        document.getElementById('permiso-denegado').style.display = 'block';
+    const panelAsignacion = document.getElementById("panel-asignacion");
+    const panelCambio = document.getElementById("panel-cambio");
+    const panelError = document.getElementById("panel-error");
+    const panelYaRol = document.getElementById("panel-ya-rol");
+    const panelEliminado = document.getElementById("panel-eliminado");
+
+    function resetPanels() {
+      panelAsignacion.style.display = "none";
+      panelCambio.style.display = "none";
+      panelError.style.display = "none";
+      panelYaRol.style.display = "none";
+      panelEliminado.style.display = "none";
+    }
+
+    function nombreDesdeEmail(email) {
+      return email.split("@")[0].replace(/\./g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function mostrarEliminar(usuario) {
+      btnEliminar.style.display = usuario && usuario.roles.length > 0 ? "block" : "none";
+    }
+
+    btnIngresar.addEventListener("click", () => {
+      resetPanels();
+
+      const email = emailInput.value.trim();
+      const rolNuevo = rolInput.value.trim();
+      if (!email || !rolNuevo) return;
+
+      const usuario = usuarios.find(u => u.email === email);
+
+      if (!rolesValidos.includes(rolNuevo) || !usuario) {
+        panelError.style.display = "block";
+        mostrarEliminar(usuario);
+        return;
+      }
+
+      // Usuario existe y rol válido
+      if (!usuario.roles.includes(rolNuevo)) {
+        usuario.roles.push(rolNuevo);
+        panelAsignacion.style.display = "block";
       } else {
-        alert("No hay escenario definido para este ingreso.");
+        // Ya tiene ese rol
+        const nombre = nombreDesdeEmail(usuario.email);
+        panelYaRol.querySelector('p').textContent = `${nombre} ya tiene el rol ${rolNuevo}.`;
+        panelYaRol.style.display = "block";
+      }
+
+      mostrarEliminar(usuario);
+
+      emailInput.value = "";
+      rolInput.value = "";
+    });
+
+    // Botón eliminar rol
+    btnEliminar.addEventListener("click", () => {
+      const email = emailInput.value.trim();
+      const usuario = usuarios.find(u => u.email === emailInput.value.trim());
+      if (usuario && usuario.roles.length > 0) {
+        usuario.roles = [];
+        resetPanels();
+        panelEliminado.style.display = "block";
+        mostrarEliminar(usuario);
       }
     });
 
-    // Botón Retirar Rol (Esc3)
-    btnRetirar.addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      const modulo = document.getElementById('modulo').value;
-      ocultarEscenarios();
-
-      if (email === "andres@example.com" && modulo === "Órdenes") {
-        document.getElementById('permiso-actualizado').style.display = 'block';
-      } else {
-        alert("Solo se puede retirar permisos a andres@example.com en Órdenes.");
-      }
-    });
   </script>
-
 </body>
 </html>
